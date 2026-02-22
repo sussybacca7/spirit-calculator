@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#f8f8f8">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Spirit Calc">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.svg">
+  <title>Spirit Calculator</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>Spirit Calculator</h1>
+    <p class="subtitle">Alcohol Content Tools</p>
+  </header>
+
+  <nav class="tab-bar">
+    <button class="tab active" data-tab="temperature">Temp Correction</button>
+    <button class="tab" data-tab="dilution">Dilution</button>
+    <button class="tab" data-tab="blending">Blending</button>
+    <button class="tab" data-tab="converter">ABV / Proof</button>
+  </nav>
+
+  <main>
+    <!-- Temperature Correction Calculator -->
+    <section id="temperature" class="calculator active">
+      <div class="card">
+        <h2>Temperature Correction</h2>
+        <p class="description">Correct your hydrometer reading to the true ABV based on liquid temperature.</p>
+        <div class="field">
+          <label for="temp-reading">Hydrometer Reading (% ABV)</label>
+          <input type="number" id="temp-reading" inputmode="decimal" step="0.1" min="0" max="100" placeholder="e.g. 65.0">
+        </div>
+        <div class="field">
+          <label for="temp-actual">Liquid Temperature</label>
+          <div class="input-row">
+            <input type="number" id="temp-actual" inputmode="decimal" step="0.1" placeholder="e.g. 25">
+            <div class="toggle-group">
+              <button class="toggle active" data-unit="C">°C</button>
+              <button class="toggle" data-unit="F">°F</button>
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <label for="temp-reference">Reference Temperature</label>
+          <div class="input-row">
+            <input type="number" id="temp-reference" inputmode="decimal" step="0.1" value="20">
+            <span class="unit-label" id="temp-ref-unit">°C</span>
+          </div>
+        </div>
+        <button class="btn-calculate" id="temp-calc">Calculate</button>
+        <div class="result" id="temp-result"></div>
+      </div>
+    </section>
+
+    <!-- Dilution Calculator -->
+    <section id="dilution" class="calculator">
+      <div class="card">
+        <h2>Dilution Calculator</h2>
+        <p class="description">Calculate how much water to add to reach your target ABV.</p>
+        <div class="field">
+          <label for="dil-volume">Current Volume (liters)</label>
+          <input type="number" id="dil-volume" inputmode="decimal" step="0.1" min="0" placeholder="e.g. 5.0">
+        </div>
+        <div class="field">
+          <label for="dil-abv">Current ABV (%)</label>
+          <input type="number" id="dil-abv" inputmode="decimal" step="0.1" min="0" max="100" placeholder="e.g. 70.0">
+        </div>
+        <div class="field">
+          <label for="dil-target">Target ABV (%)</label>
+          <input type="number" id="dil-target" inputmode="decimal" step="0.1" min="0" max="100" placeholder="e.g. 40.0">
+        </div>
+        <button class="btn-calculate" id="dil-calc">Calculate</button>
+        <div class="result" id="dil-result"></div>
+      </div>
+    </section>
+
+    <!-- Blending Calculator -->
+    <section id="blending" class="calculator">
+      <div class="card">
+        <h2>Blending Calculator</h2>
+        <p class="description">Mix two spirits and find the resulting ABV.</p>
+        <h3 class="spirit-label">Spirit A</h3>
+        <div class="field">
+          <label for="blend-vol1">Volume (liters)</label>
+          <input type="number" id="blend-vol1" inputmode="decimal" step="0.1" min="0" placeholder="e.g. 3.0">
+        </div>
+        <div class="field">
+          <label for="blend-abv1">ABV (%)</label>
+          <input type="number" id="blend-abv1" inputmode="decimal" step="0.1" min="0" max="100" placeholder="e.g. 60.0">
+        </div>
+        <h3 class="spirit-label">Spirit B</h3>
+        <div class="field">
+          <label for="blend-vol2">Volume (liters)</label>
+          <input type="number" id="blend-vol2" inputmode="decimal" step="0.1" min="0" placeholder="e.g. 2.0">
+        </div>
+        <div class="field">
+          <label for="blend-abv2">ABV (%)</label>
+          <input type="number" id="blend-abv2" inputmode="decimal" step="0.1" min="0" max="100" placeholder="e.g. 45.0">
+        </div>
+        <button class="btn-calculate" id="blend-calc">Calculate</button>
+        <div class="result" id="blend-result"></div>
+      </div>
+    </section>
+
+    <!-- ABV / Proof Converter -->
+    <section id="converter" class="calculator">
+      <div class="card">
+        <h2>ABV / Proof Converter</h2>
+        <p class="description">Convert between ABV%, US Proof, and Gay-Lussac (GL).</p>
+        <div class="field">
+          <label for="conv-value">Value</label>
+          <input type="number" id="conv-value" inputmode="decimal" step="0.1" min="0" placeholder="e.g. 40">
+        </div>
+        <div class="field">
+          <label>Convert from</label>
+          <div class="radio-group">
+            <label class="radio-label"><input type="radio" name="conv-from" value="abv" checked> ABV %</label>
+            <label class="radio-label"><input type="radio" name="conv-from" value="proof"> US Proof</label>
+            <label class="radio-label"><input type="radio" name="conv-from" value="gl"> Gay-Lussac</label>
+          </div>
+        </div>
+        <button class="btn-calculate" id="conv-calc">Convert</button>
+        <div class="result" id="conv-result"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
