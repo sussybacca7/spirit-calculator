@@ -28,6 +28,34 @@ body {
 header {
   text-align: center;
   padding: 24px 16px 12px;
+  position: relative;
+}
+
+.lang-switcher {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.lang-btn {
+  padding: 6px 10px;
+  border: none;
+  background: var(--bg-input);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.lang-btn.active {
+  background: var(--accent);
+  color: #ffffff;
+  font-weight: 600;
 }
 
 header h1 {
