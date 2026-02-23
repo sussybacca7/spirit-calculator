@@ -1,9 +1,10 @@
-const CACHE_NAME = 'spirit-calc-v2';
+const CACHE_NAME = 'spirit-calc-v3';
 const ASSETS = [
   './',
   './index.html',
   './styles.css',
   './app.js',
+  './table2.js',
   './manifest.json'
 ];
 

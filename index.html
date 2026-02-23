@@ -37,7 +37,7 @@
         <p class="description" data-i18n="temp_desc">Correct your hydrometer reading to the true ABV based on liquid temperature.</p>
         <div class="field">
           <label for="temp-reading" data-i18n="temp_reading_label">Hydrometer Reading (% ABV)</label>
-          <input type="number" id="temp-reading" inputmode="decimal" step="0.1" min="0" max="100" data-i18n-placeholder="temp_reading_ph" placeholder="e.g. 65.0">
+          <input type="number" id="temp-reading" inputmode="decimal" step="0.1" min="0.5" max="105" data-i18n-placeholder="temp_reading_ph" placeholder="e.g. 65.0">
         </div>
         <div class="field">
           <label for="temp-actual" data-i18n="temp_liquid_label">Liquid Temperature</label>
@@ -47,13 +47,6 @@
               <button class="toggle active" data-unit="C">°C</button>
               <button class="toggle" data-unit="F">°F</button>
             </div>
-          </div>
-        </div>
-        <div class="field">
-          <label for="temp-reference" data-i18n="temp_ref_label">Reference Temperature</label>
-          <div class="input-row">
-            <input type="number" id="temp-reference" inputmode="decimal" step="0.1" value="20">
-            <span class="unit-label" id="temp-ref-unit">°C</span>
           </div>
         </div>
         <button class="btn-calculate" id="temp-calc" data-i18n="btn_calculate">Calculate</button>
@@ -134,6 +127,7 @@
     </section>
   </main>
 
+  <script src="table2.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

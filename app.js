@@ -10,13 +10,12 @@ const translations = {
     btn_calculate: 'Calculate',
     btn_convert: 'Convert',
     // Temperature
-    temp_title: 'Temperature Correction',
-    temp_desc: 'Correct your hydrometer reading to the true ABV based on liquid temperature.',
-    temp_reading_label: 'Hydrometer Reading (% ABV)',
+    temp_title: 'Temperature Correction (Table 2)',
+    temp_desc: 'Look up true ABV at 20°C from your spirometer reading and liquid temperature using Table 2.',
+    temp_reading_label: 'Spirometer Reading (%)',
     temp_reading_ph: 'e.g. 65.0',
     temp_liquid_label: 'Liquid Temperature',
     temp_liquid_ph: 'e.g. 25',
-    temp_ref_label: 'Reference Temperature',
     // Dilution
     dil_title: 'Dilution Calculator',
     dil_desc: 'Calculate how much water to add to reach your target ABV.',
@@ -47,6 +46,8 @@ const translations = {
     // Errors
     err_fill_all: 'Please fill in all fields.',
     err_abv_range: 'ABV must be between 0 and 100.',
+    err_temp_range: 'Temperature must be between 0°C and 35°C.',
+    err_out_of_range: 'Reading/temperature combination is outside Table 2 range.',
     err_target_lower: 'Target ABV must be lower than current ABV.',
     err_target_zero: 'Target ABV must be greater than 0.',
     err_vol_zero: 'Volume must be greater than 0.',
@@ -73,13 +74,12 @@ const translations = {
     btn_calculate: 'გამოთვლა',
     btn_convert: 'კონვერტაცია',
     // Temperature
-    temp_title: 'ტემპერატურის კორექცია',
-    temp_desc: 'შეასწორეთ ჰიდრომეტრის ჩვენება რეალურ ალკ.%-ზე სითხის ტემპერატურის მიხედვით.',
-    temp_reading_label: 'ჰიდრომეტრის ჩვენება (% ალკ.)',
+    temp_title: 'ტემპერატურის კორექცია (ცხრილი 2)',
+    temp_desc: 'ცხრილი 2-ის გამოყენებით განსაზღვრეთ 20°C-ზე სპირტის რეალური შემცველობა სპირტომეტრის ჩვენებისა და ტემპერატურის მიხედვით.',
+    temp_reading_label: 'სპირტომეტრის ჩვენება (%)',
     temp_reading_ph: 'მაგ. 65.0',
     temp_liquid_label: 'სითხის ტემპერატურა',
     temp_liquid_ph: 'მაგ. 25',
-    temp_ref_label: 'საცნობარო ტემპერატურა',
     // Dilution
     dil_title: 'განზავების კალკულატორი',
     dil_desc: 'გამოთვალეთ რამდენი წყალი დაამატოთ სასურველ ალკ.%-მდე.',
@@ -110,6 +110,8 @@ const translations = {
     // Errors
     err_fill_all: 'გთხოვთ შეავსოთ ყველა ველი.',
     err_abv_range: 'ალკ.% უნდა იყოს 0-დან 100-მდე.',
+    err_temp_range: 'ტემპერატურა უნდა იყოს 0°C-დან 35°C-მდე.',
+    err_out_of_range: 'ჩვენება/ტემპერატურის კომბინაცია ცხრილი 2-ის დიაპაზონს სცილდება.',
     err_target_lower: 'სასურველი ალკ.% უნდა იყოს მიმდინარეზე ნაკლები.',
     err_target_zero: 'სასურველი ალკ.% უნდა იყოს 0-ზე მეტი.',
     err_vol_zero: 'მოცულობა უნდა იყოს 0-ზე მეტი.',
@@ -187,9 +189,6 @@ toggleBtns.forEach(btn => {
     toggleBtns.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     tempUnit.current = btn.dataset.unit;
-    document.getElementById('temp-ref-unit').textContent = tempUnit.current === 'C' ? '°C' : '°F';
-    const refInput = document.getElementById('temp-reference');
-    refInput.value = tempUnit.current === 'C' ? '20' : '68';
   });
 });
 
@@ -204,33 +203,73 @@ function showError(elementId, message) {
   showResult(elementId, `<div class="result-error">${message}</div>`);
 }
 
-// --- 1. Temperature Correction ---
-function temperatureCorrection(readingABV, tempC, refTempC) {
-  const delta = tempC - refTempC;
-  const factor = 0.40 - (readingABV - 40) * 0.001;
-  const corrected = readingABV + (delta * Math.max(factor, 0.25));
-  return Math.round(corrected * 10) / 10;
+// --- 1. Temperature Correction (Table 2) ---
+
+// Precompute sorted spirometer readings for fast lookup
+const _T2_READINGS = Object.keys(TABLE2).map(parseFloat).sort((a, b) => a - b);
+
+function table2Lookup(spirometerReading, tempC) {
+  // Find the surrounding spirometer grid points
+  let loIdx = 0;
+  for (let i = 0; i < _T2_READINGS.length; i++) {
+    if (_T2_READINGS[i] <= spirometerReading) loIdx = i;
+  }
+  const hiIdx = (_T2_READINGS[loIdx] < spirometerReading && loIdx < _T2_READINGS.length - 1)
+    ? loIdx + 1 : loIdx;
+  const sLo = _T2_READINGS[loIdx], sHi = _T2_READINGS[hiIdx];
+  const sFrac = sLo === sHi ? 0 : (spirometerReading - sLo) / (sHi - sLo);
+
+  // Temperature grid points (table uses integer °C, 0–35)
+  const tLo = Math.floor(tempC);
+  const tHi = tempC > tLo ? Math.min(35, tLo + 1) : tLo;
+  const tFrac = tempC - tLo;
+
+  function getCell(s, t) {
+    const row = TABLE2[s.toFixed(1)];
+    if (!row) return null;
+    const v = row[t === 35 ? '+35' : String(t)];
+    return (v !== undefined && v !== null) ? v : null;
+  }
+
+  function lerpT(s) {
+    const a = getCell(s, tLo), b = getCell(s, tHi);
+    if (a === null && b === null) return null;
+    if (a === null) return b;
+    if (b === null) return a;
+    return a + (b - a) * tFrac;
+  }
+
+  const vLo = lerpT(sLo), vHi = lerpT(sHi);
+  if (vLo === null && vHi === null) return null;
+  if (vLo === null) return Math.round(vHi * 100) / 100;
+  if (vHi === null) return Math.round(vLo * 100) / 100;
+  return Math.round((vLo + (vHi - vLo) * sFrac) * 100) / 100;
 }
 
 document.getElementById('temp-calc').addEventListener('click', () => {
   const reading = parseFloat(document.getElementById('temp-reading').value);
   let temp = parseFloat(document.getElementById('temp-actual').value);
-  let refTemp = parseFloat(document.getElementById('temp-reference').value);
 
-  if (isNaN(reading) || isNaN(temp) || isNaN(refTemp)) {
+  if (isNaN(reading) || isNaN(temp)) {
     return showError('temp-result', t('err_fill_all'));
   }
-  if (reading < 0 || reading > 100) {
-    return showError('temp-result', t('err_abv_range'));
+  if (reading < 0.5 || reading > 105) {
+    return showError('temp-result', 'Spirometer reading must be between 0.5 and 105.');
   }
 
-  if (tempUnit.current === 'F') {
-    temp = (temp - 32) * 5 / 9;
-    refTemp = (refTemp - 32) * 5 / 9;
+  if (tempUnit.current === 'F') temp = (temp - 32) * 5 / 9;
+  temp = Math.round(temp * 10) / 10;
+
+  if (temp < 0 || temp > 35) {
+    return showError('temp-result', t('err_temp_range'));
   }
 
-  const corrected = temperatureCorrection(reading, temp, refTemp);
-  const diff = Math.round((corrected - reading) * 10) / 10;
+  const corrected = table2Lookup(reading, temp);
+  if (corrected === null) {
+    return showError('temp-result', t('err_out_of_range'));
+  }
+
+  const diff = Math.round((corrected - reading) * 100) / 100;
   const sign = diff >= 0 ? '+' : '';
   const displayTemp = parseFloat(document.getElementById('temp-actual').value);
 
