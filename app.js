@@ -3,7 +3,8 @@ const translations = {
   en: {
     title: 'Spirit Calculator',
     subtitle: 'Alcohol Content Tools',
-    tab_temp: 'Table 1',
+    tab_density: 'Table 1',
+    tab_temp: 'Table 2',
     tab_volume: 'Table 4',
     tab_dilution: 'Dilution',
     tab_blending: 'Blending',
@@ -57,6 +58,14 @@ const translations = {
     err_vol_zero: 'Volume must be greater than 0.',
     err_valid_number: 'Please enter a valid positive number.',
     err_table_not_loaded: 'Table {n} is not available.',
+    // Table 1: density lookup
+    t1_title: 'Density Lookup',
+    t1_desc: 'Find the density of a water-alcohol solution at a given temperature using Table 1.',
+    t1_abv_label: 'Alcohol Content at 20°C (%)',
+    t1_abv_ph: 'e.g. 40.0',
+    t1_temp_label: 'Temperature (°C)',
+    t1_temp_ph: 'e.g. 20',
+    res_density: 'Density',
     // Volume calculator
     vol_title: 'Pure Alcohol Volume',
     vol_desc: 'Calculate the volume of pure ethyl alcohol in a solution using Table 4 multipliers.',
@@ -84,7 +93,8 @@ const translations = {
   ka: {
     title: 'სპირტის კალკულატორი',
     subtitle: 'ალკოჰოლის შემცველობის ხელსაწყოები',
-    tab_temp: 'ცხრილი 1',
+    tab_density: 'ცხრილი 1',
+    tab_temp: 'ცხრილი 2',
     tab_volume: 'ცხრილი 4',
     tab_dilution: 'განზავება',
     tab_blending: 'შერევა',
@@ -138,6 +148,14 @@ const translations = {
     err_vol_zero: 'მოცულობა უნდა იყოს 0-ზე მეტი.',
     err_valid_number: 'გთხოვთ შეიყვანოთ დადებითი რიცხვი.',
     err_table_not_loaded: 'ცხრილი {n} მიუწვდომელია.',
+    // Table 1: density lookup
+    t1_title: 'სიმკვრივის ცხრილი',
+    t1_desc: 'ცხრილი 1-ის გამოყენებით განსაზღვრეთ წყლის-სპირტის ხსნარის სიმკვრივე მოცემულ ტემპერატურაზე.',
+    t1_abv_label: 'ალკოჰოლის შემცველობა 20°C-ზე (%)',
+    t1_abv_ph: 'მაგ. 40.0',
+    t1_temp_label: 'ტემპერატურა (°C)',
+    t1_temp_ph: 'მაგ. 20',
+    res_density: 'სიმკვრივე',
     // Volume calculator
     vol_title: 'სუფთა სპირტის მოცულობა',
     vol_desc: 'გამოთვალეთ სუფთა ეთილის სპირტის მოცულობა ხსნარში ცხრილი 4-ის გამამრავლებლების გამოყენებით.',
@@ -424,6 +442,97 @@ document.getElementById('temp-calc').addEventListener('click', () => {
       ${t('res_correction')}: ${sign}${diff.toFixed(2)}%<br>
       ${t('res_hydrometer_read')} ${reading}% ${t('res_at')} ${displayTemp}°${tempUnit.current}<br>
       ${t('res_via_table')} ${selectedTable}
+    </div>
+  `);
+});
+
+// --- 1. Density Lookup (Table 1) ---
+let table1Lookup = null;
+
+fetch('./tables/table 2 ცხრილი 2/alcohol_density_table_complete.json')
+  .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+  .then(data => { table1Lookup = buildDensityLookup(data); })
+  .catch(() => { table1Lookup = null; });
+
+function buildDensityLookup(data) {
+  // Flatten all pages into: { alcohol_percent: { temperature: density } }
+  const lookup = {};
+  for (const page of data.tables) {
+    const percentages = page.alcohol_percent;
+    for (const [tempKey, densities] of Object.entries(page.data)) {
+      const temp = parseFloat(tempKey);
+      if (isNaN(temp)) continue;
+      for (let i = 0; i < percentages.length; i++) {
+        const pct = percentages[i];
+        if (!lookup[pct]) lookup[pct] = {};
+        // First value wins for any duplicate temperature keys
+        if (lookup[pct][temp] === undefined) lookup[pct][temp] = densities[i];
+      }
+    }
+  }
+  return lookup;
+}
+
+function getDensity(abv, tempC) {
+  if (!table1Lookup) return null;
+  const allPcts = Object.keys(table1Lookup).map(Number).sort((a, b) => a - b);
+  if (allPcts.length === 0) return null;
+
+  const p = Math.max(allPcts[0], Math.min(allPcts[allPcts.length - 1], abv));
+  let pLo = allPcts[0], pHi = allPcts[allPcts.length - 1];
+  for (let i = 0; i < allPcts.length - 1; i++) {
+    if (allPcts[i] <= p && allPcts[i + 1] >= p) { pLo = allPcts[i]; pHi = allPcts[i + 1]; break; }
+  }
+
+  function densityAtPct(pct) {
+    const tm = table1Lookup[pct];
+    if (!tm) return null;
+    const temps = Object.keys(tm).map(Number).sort((a, b) => a - b);
+    const t = Math.max(temps[0], Math.min(temps[temps.length - 1], tempC));
+    if (t <= temps[0]) return tm[temps[0]];
+    if (t >= temps[temps.length - 1]) return tm[temps[temps.length - 1]];
+    for (let i = 0; i < temps.length - 1; i++) {
+      if (temps[i] <= t && temps[i + 1] >= t) {
+        return tm[temps[i]] + (tm[temps[i + 1]] - tm[temps[i]]) * (t - temps[i]) / (temps[i + 1] - temps[i]);
+      }
+    }
+    return null;
+  }
+
+  const dLo = densityAtPct(pLo);
+  const dHi = densityAtPct(pHi);
+  if (dLo === null && dHi === null) return null;
+  if (dLo === null) return dHi;
+  if (dHi === null) return dLo;
+  if (pLo === pHi) return dLo;
+  return dLo + (dHi - dLo) * (p - pLo) / (pHi - pLo);
+}
+
+document.getElementById('t1-calc').addEventListener('click', () => {
+  const abv = parseNum('t1-abv');
+  const temp = parseNum('t1-temp');
+
+  if (isNaN(abv) || isNaN(temp)) {
+    return showError('t1-result', t('err_fill_all'));
+  }
+  if (abv < 0 || abv > 100) {
+    return showError('t1-result', t('err_abv_range'));
+  }
+  if (!table1Lookup) {
+    return showError('t1-result', t('err_table_not_loaded').replace('{n}', '1'));
+  }
+
+  const density = getDensity(abv, temp);
+  if (density === null) {
+    return showError('t1-result', t('err_out_of_range'));
+  }
+
+  showResult('t1-result', `
+    <div class="result-label">${t('res_density')}</div>
+    <div class="result-value">${density.toFixed(5)} g/mL</div>
+    <div class="result-detail">
+      ${abv}% ${t('res_at')} ${temp}°C<br>
+      ${t('res_via_table')} 1
     </div>
   `);
 });
