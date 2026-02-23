@@ -12,11 +12,11 @@ const translations = {
     btn_convert: 'Convert',
     // Temperature
     temp_title: 'Temperature Correction',
-    temp_desc: 'Correct your hydrometer reading to the true ABV based on liquid temperature.',
+    temp_desc: 'Correct your spirometer reading to the true ABV at 20°C based on liquid temperature.',
     temp_table_label: 'Lookup Table',
     temp_table_1: 'Table 1',
     temp_table_2: 'Table 2',
-    temp_reading_label: 'Hydrometer Reading (% ABV)',
+    temp_reading_label: 'Spirometer Reading (%)',
     temp_reading_ph: 'e.g. 65.0',
     temp_liquid_label: 'Liquid Temperature',
     temp_liquid_ph: 'e.g. 25',
@@ -50,12 +50,13 @@ const translations = {
     // Errors
     err_fill_all: 'Please fill in all fields.',
     err_abv_range: 'ABV must be between 0 and 100.',
+    err_temp_range: 'Temperature must be between 0°C and 35°C.',
+    err_out_of_range: 'Value is outside the table range.',
     err_target_lower: 'Target ABV must be lower than current ABV.',
     err_target_zero: 'Target ABV must be greater than 0.',
     err_vol_zero: 'Volume must be greater than 0.',
     err_valid_number: 'Please enter a valid positive number.',
     err_table_not_loaded: 'Table {n} is not available.',
-    err_out_of_range: 'Value is outside the table range.',
     // Volume calculator
     vol_title: 'Pure Alcohol Volume',
     vol_desc: 'Calculate the volume of pure ethyl alcohol in a solution using Table 4 multipliers.',
@@ -68,7 +69,7 @@ const translations = {
     // Results
     res_corrected_abv: 'Corrected ABV',
     res_correction: 'Correction',
-    res_hydrometer_read: 'Hydrometer read',
+    res_hydrometer_read: 'Spirometer read',
     res_at: 'at',
     res_via_table: 'via Table',
     res_multiplier: 'Multiplier',
@@ -92,11 +93,11 @@ const translations = {
     btn_convert: 'კონვერტაცია',
     // Temperature
     temp_title: 'ტემპერატურის კორექცია',
-    temp_desc: 'შეასწორეთ ჰიდრომეტრის ჩვენება რეალურ ალკ.%-ზე სითხის ტემპერატურის მიხედვით.',
+    temp_desc: 'შეასწორეთ სპირტომეტრის ჩვენება 20°C-ზე რეალურ ალკ.%-ზე სითხის ტემპერატურის მიხედვით.',
     temp_table_label: 'საძიებო ცხრილი',
     temp_table_1: 'ცხრილი 1',
     temp_table_2: 'ცხრილი 2',
-    temp_reading_label: 'ჰიდრომეტრის ჩვენება (% ალკ.)',
+    temp_reading_label: 'სპირტომეტრის ჩვენება (%)',
     temp_reading_ph: 'მაგ. 65.0',
     temp_liquid_label: 'სითხის ტემპერატურა',
     temp_liquid_ph: 'მაგ. 25',
@@ -130,12 +131,13 @@ const translations = {
     // Errors
     err_fill_all: 'გთხოვთ შეავსოთ ყველა ველი.',
     err_abv_range: 'ალკ.% უნდა იყოს 0-დან 100-მდე.',
+    err_temp_range: 'ტემპერატურა უნდა იყოს 0°C-დან 35°C-მდე.',
+    err_out_of_range: 'მნიშვნელობა ცხრილის დიაპაზონს გარეთ.',
     err_target_lower: 'სასურველი ალკ.% უნდა იყოს მიმდინარეზე ნაკლები.',
     err_target_zero: 'სასურველი ალკ.% უნდა იყოს 0-ზე მეტი.',
     err_vol_zero: 'მოცულობა უნდა იყოს 0-ზე მეტი.',
     err_valid_number: 'გთხოვთ შეიყვანოთ დადებითი რიცხვი.',
     err_table_not_loaded: 'ცხრილი {n} მიუწვდომელია.',
-    err_out_of_range: 'მნიშვნელობა ცხრილის დიაპაზონს გარეთ.',
     // Volume calculator
     vol_title: 'სუფთა სპირტის მოცულობა',
     vol_desc: 'გამოთვალეთ სუფთა ეთილის სპირტის მოცულობა ხსნარში ცხრილი 4-ის გამამრავლებლების გამოყენებით.',
@@ -148,7 +150,7 @@ const translations = {
     // Results
     res_corrected_abv: 'შესწორებული ალკ.',
     res_correction: 'კორექცია',
-    res_hydrometer_read: 'ჰიდრომეტრმა აჩვენა',
+    res_hydrometer_read: 'სპირტომეტრმა აჩვენა',
     res_at: '',
     res_via_table: 'ცხრილი',
     res_multiplier: 'გამამრავლებელი',
@@ -224,6 +226,11 @@ toggleBtns.forEach(btn => {
   });
 });
 
+// --- Helper: parse numeric input (accepts both . and , as decimal separator) ---
+function parseNum(id) {
+  return parseFloat(document.getElementById(id).value.replace(',', '.'));
+}
+
 // --- Helper: show result ---
 function showResult(elementId, content) {
   const el = document.getElementById(elementId);
@@ -237,14 +244,10 @@ function showError(elementId, message) {
 
 // --- 1. Temperature Correction ---
 
-// Table state
-const loadedTables = { '1': null, '2': null, '4': null };
+// Table 2 is always available via TABLE2 constant (table2.js).
+// Table 1 is loaded from JSON when available.
+const loadedTables = { '1': null };
 let selectedTable = localStorage.getItem('spirit-calc-table') || '2';
-
-const TABLE_PATHS = {
-  '1': './tables/table 1 ცხრილი 1/table1_data.json',
-  '2': './tables/table 2 ცხრილი 2/table2_data.json',
-};
 
 function initTableSelector() {
   document.querySelectorAll('.toggle[data-table]').forEach(btn => {
@@ -263,38 +266,73 @@ function initTableSelector() {
 }
 
 async function loadTables() {
-  await Promise.all(
-    Object.entries(TABLE_PATHS).map(([key, path]) =>
-      fetch(path)
-        .then(r => { if (!r.ok) throw new Error(); return r.json(); })
-        .then(data => { loadedTables[key] = data; })
-        .catch(() => { loadedTables[key] = null; })
-    )
-  );
+  // Table 2 is hardcoded in table2.js — no fetch needed.
+  // Try to load Table 1 from JSON.
+  await fetch('./tables/table 1 ცხრილი 1/table1_data.json')
+    .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+    .then(data => { loadedTables['1'] = data; })
+    .catch(() => { loadedTables['1'] = null; });
+
   document.querySelectorAll('.toggle[data-table]').forEach(btn => {
-    const available = loadedTables[btn.dataset.table] !== null;
+    const key = btn.dataset.table;
+    const available = key === '2' || loadedTables[key] !== null;
     btn.disabled = !available;
     if (!available && btn.dataset.table === selectedTable) {
-      const fallback = ['1', '2', '4'].find(k => loadedTables[k] !== null);
-      if (fallback) {
-        selectedTable = fallback;
-        localStorage.setItem('spirit-calc-table', selectedTable);
-        document.querySelectorAll('.toggle[data-table]').forEach(b => {
-          b.classList.toggle('active', b.dataset.table === selectedTable);
-        });
-      }
+      selectedTable = '2';
+      localStorage.setItem('spirit-calc-table', selectedTable);
+      document.querySelectorAll('.toggle[data-table]').forEach(b => {
+        b.classList.toggle('active', b.dataset.table === selectedTable);
+      });
     }
   });
 }
 
-// Bilinear interpolation from table data
+// Fast Table 2 lookup using preloaded TABLE2 constant (from table2.js)
+const _T2_READINGS = Object.keys(TABLE2).map(parseFloat).sort((a, b) => a - b);
+
+function table2Lookup(spirometerReading, tempC) {
+  let loIdx = 0;
+  for (let i = 0; i < _T2_READINGS.length; i++) {
+    if (_T2_READINGS[i] <= spirometerReading) loIdx = i;
+  }
+  const hiIdx = (_T2_READINGS[loIdx] < spirometerReading && loIdx < _T2_READINGS.length - 1)
+    ? loIdx + 1 : loIdx;
+  const sLo = _T2_READINGS[loIdx], sHi = _T2_READINGS[hiIdx];
+  const sFrac = sLo === sHi ? 0 : (spirometerReading - sLo) / (sHi - sLo);
+
+  const tLo = Math.floor(tempC);
+  const tHi = tempC > tLo ? Math.min(35, tLo + 1) : tLo;
+  const tFrac = tempC - tLo;
+
+  function getCell(s, t) {
+    const row = TABLE2[s.toFixed(1)];
+    if (!row) return null;
+    const v = row[t === 35 ? '+35' : String(t)];
+    return (v !== undefined && v !== null) ? v : null;
+  }
+
+  function lerpT(s) {
+    const a = getCell(s, tLo), b = getCell(s, tHi);
+    if (a === null && b === null) return null;
+    if (a === null) return b;
+    if (b === null) return a;
+    return a + (b - a) * tFrac;
+  }
+
+  const vLo = lerpT(sLo), vHi = lerpT(sHi);
+  if (vLo === null && vHi === null) return null;
+  if (vLo === null) return Math.round(vHi * 100) / 100;
+  if (vHi === null) return Math.round(vLo * 100) / 100;
+  return Math.round((vLo + (vHi - vLo) * sFrac) * 100) / 100;
+}
+
+// Generic bilinear interpolation for JSON-based tables (Table 1, etc.)
 function linearInterp(x, x1, x2, y1, y2) {
   if (x1 === x2) return y1;
   return y1 + (y2 - y1) * (x - x1) / (x2 - x1);
 }
 
 function getTableValue(data, spirReading, tempC) {
-  // Build map: numeric reading → original string key
   const rKeyMap = {};
   Object.keys(data).forEach(k => { rKeyMap[Number(k)] = k; });
   const rNums = Object.keys(rKeyMap).map(Number).sort((a, b) => b - a);
@@ -305,7 +343,6 @@ function getTableValue(data, spirReading, tempC) {
   const rMax = rNums[0];
   const r = Math.max(rMin, Math.min(rMax, spirReading));
 
-  // Find bracketing reading keys
   let rLo = rMin, rHi = rMax;
   for (let i = 0; i < rNums.length - 1; i++) {
     if (rNums[i] >= r && rNums[i + 1] <= r) {
@@ -344,40 +381,47 @@ function getTableValue(data, spirReading, tempC) {
 }
 
 document.getElementById('temp-calc').addEventListener('click', () => {
-  const reading = parseFloat(document.getElementById('temp-reading').value);
-  let temp = parseFloat(document.getElementById('temp-actual').value);
+  const reading = parseNum('temp-reading');
+  let temp = parseNum('temp-actual');
 
   if (isNaN(reading) || isNaN(temp)) {
     return showError('temp-result', t('err_fill_all'));
   }
-  if (reading < 0 || reading > 105) {
+  if (reading < 0.5 || reading > 105) {
     return showError('temp-result', t('err_abv_range'));
   }
 
-  const table = loadedTables[selectedTable];
-  if (!table) {
-    return showError('temp-result', t('err_table_not_loaded').replace('{n}', selectedTable));
+  if (tempUnit.current === 'F') temp = (temp - 32) * 5 / 9;
+  temp = Math.round(temp * 10) / 10;
+
+  if (temp < 0 || temp > 35) {
+    return showError('temp-result', t('err_temp_range'));
   }
 
-  if (tempUnit.current === 'F') {
-    temp = (temp - 32) * 5 / 9;
+  let corrected;
+  if (selectedTable === '2') {
+    corrected = table2Lookup(reading, temp);
+  } else {
+    const table = loadedTables[selectedTable];
+    if (!table) {
+      return showError('temp-result', t('err_table_not_loaded').replace('{n}', selectedTable));
+    }
+    corrected = getTableValue(table.data, reading, temp);
   }
 
-  const corrected = getTableValue(table.data, reading, temp);
   if (corrected === null) {
     return showError('temp-result', t('err_out_of_range'));
   }
 
-  const correctedRounded = Math.round(corrected * 10) / 10;
-  const diff = Math.round((correctedRounded - reading) * 10) / 10;
+  const diff = Math.round((corrected - reading) * 100) / 100;
   const sign = diff >= 0 ? '+' : '';
-  const displayTemp = parseFloat(document.getElementById('temp-actual').value);
+  const displayTemp = parseNum('temp-actual');
 
   showResult('temp-result', `
     <div class="result-label">${t('res_corrected_abv')}</div>
-    <div class="result-value">${correctedRounded}%</div>
+    <div class="result-value">${corrected.toFixed(2)}%</div>
     <div class="result-detail">
-      ${t('res_correction')}: ${sign}${diff}%<br>
+      ${t('res_correction')}: ${sign}${diff.toFixed(2)}%<br>
       ${t('res_hydrometer_read')} ${reading}% ${t('res_at')} ${displayTemp}°${tempUnit.current}<br>
       ${t('res_via_table')} ${selectedTable}
     </div>
@@ -393,9 +437,9 @@ fetch('./tables/table 2 ცხრილი 2/table4_data.json')
   .catch(() => { table4Data = null; });
 
 document.getElementById('vol-calc').addEventListener('click', () => {
-  const vol = parseFloat(document.getElementById('vol-volume').value);
-  const abv = parseFloat(document.getElementById('vol-abv').value);
-  const temp = parseFloat(document.getElementById('vol-temp').value);
+  const vol = parseNum('vol-volume');
+  const abv = parseNum('vol-abv');
+  const temp = parseNum('vol-temp');
 
   if (isNaN(vol) || isNaN(abv) || isNaN(temp)) {
     return showError('vol-result', t('err_fill_all'));
@@ -425,11 +469,11 @@ document.getElementById('vol-calc').addEventListener('click', () => {
   `);
 });
 
-// --- 4. Dilution Calculator ---
+// --- 3. Dilution Calculator ---
 document.getElementById('dil-calc').addEventListener('click', () => {
-  const vol = parseFloat(document.getElementById('dil-volume').value);
-  const abv = parseFloat(document.getElementById('dil-abv').value);
-  const target = parseFloat(document.getElementById('dil-target').value);
+  const vol = parseNum('dil-volume');
+  const abv = parseNum('dil-abv');
+  const target = parseNum('dil-target');
 
   if (isNaN(vol) || isNaN(abv) || isNaN(target)) {
     return showError('dil-result', t('err_fill_all'));
@@ -457,12 +501,12 @@ document.getElementById('dil-calc').addEventListener('click', () => {
   `);
 });
 
-// --- 5. Blending Calculator ---
+// --- 4. Blending Calculator ---
 document.getElementById('blend-calc').addEventListener('click', () => {
-  const v1 = parseFloat(document.getElementById('blend-vol1').value);
-  const a1 = parseFloat(document.getElementById('blend-abv1').value);
-  const v2 = parseFloat(document.getElementById('blend-vol2').value);
-  const a2 = parseFloat(document.getElementById('blend-abv2').value);
+  const v1 = parseNum('blend-vol1');
+  const a1 = parseNum('blend-abv1');
+  const v2 = parseNum('blend-vol2');
+  const a2 = parseNum('blend-abv2');
 
   if (isNaN(v1) || isNaN(a1) || isNaN(v2) || isNaN(a2)) {
     return showError('blend-result', t('err_fill_all'));
@@ -484,9 +528,9 @@ document.getElementById('blend-calc').addEventListener('click', () => {
   `);
 });
 
-// --- 6. ABV / Proof Converter ---
+// --- 5. ABV / Proof Converter ---
 document.getElementById('conv-calc').addEventListener('click', () => {
-  const value = parseFloat(document.getElementById('conv-value').value);
+  const value = parseNum('conv-value');
   const from = document.querySelector('input[name="conv-from"]:checked').value;
 
   if (isNaN(value) || value < 0) {
