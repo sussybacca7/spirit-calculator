@@ -3,8 +3,8 @@ const translations = {
   en: {
     title: 'Spirit Calculator',
     subtitle: 'Alcohol Content Tools',
-    tab_temp: 'Temp Correction',
-    tab_volume: 'Pure Alcohol',
+    tab_temp: 'Table 1',
+    tab_volume: 'Table 4',
     tab_dilution: 'Dilution',
     tab_blending: 'Blending',
     tab_converter: 'ABV / Proof',
@@ -84,8 +84,8 @@ const translations = {
   ka: {
     title: 'სპირტის კალკულატორი',
     subtitle: 'ალკოჰოლის შემცველობის ხელსაწყოები',
-    tab_temp: 'ტემპ. კორექცია',
-    tab_volume: 'სუფ. სპირტი',
+    tab_temp: 'ცხრილი 1',
+    tab_volume: 'ცხრილი 4',
     tab_dilution: 'განზავება',
     tab_blending: 'შერევა',
     tab_converter: 'ალკ. / პრუფი',
