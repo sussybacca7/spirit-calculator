@@ -1,4 +1,4 @@
-const CACHE_NAME = 'spirit-calc-v4';
+const CACHE_NAME = 'spirit-calc-v5';
 const ASSETS = [
   './',
   './index.html',
