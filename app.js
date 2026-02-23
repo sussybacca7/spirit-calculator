@@ -192,6 +192,11 @@ toggleBtns.forEach(btn => {
   });
 });
 
+// --- Helper: parse numeric input (accepts both . and , as decimal separator) ---
+function parseNum(id) {
+  return parseFloat(document.getElementById(id).value.replace(',', '.'));
+}
+
 // --- Helper: show result ---
 function showResult(elementId, content) {
   const el = document.getElementById(elementId);
@@ -247,8 +252,8 @@ function table2Lookup(spirometerReading, tempC) {
 }
 
 document.getElementById('temp-calc').addEventListener('click', () => {
-  const reading = parseFloat(document.getElementById('temp-reading').value);
-  let temp = parseFloat(document.getElementById('temp-actual').value);
+  const reading = parseNum('temp-reading');
+  let temp = parseNum('temp-actual');
 
   if (isNaN(reading) || isNaN(temp)) {
     return showError('temp-result', t('err_fill_all'));
@@ -271,7 +276,7 @@ document.getElementById('temp-calc').addEventListener('click', () => {
 
   const diff = Math.round((corrected - reading) * 100) / 100;
   const sign = diff >= 0 ? '+' : '';
-  const displayTemp = parseFloat(document.getElementById('temp-actual').value);
+  const displayTemp = parseNum('temp-actual');
 
   showResult('temp-result', `
     <div class="result-label">${t('res_corrected_abv')}</div>
@@ -285,9 +290,9 @@ document.getElementById('temp-calc').addEventListener('click', () => {
 
 // --- 2. Dilution Calculator ---
 document.getElementById('dil-calc').addEventListener('click', () => {
-  const vol = parseFloat(document.getElementById('dil-volume').value);
-  const abv = parseFloat(document.getElementById('dil-abv').value);
-  const target = parseFloat(document.getElementById('dil-target').value);
+  const vol = parseNum('dil-volume');
+  const abv = parseNum('dil-abv');
+  const target = parseNum('dil-target');
 
   if (isNaN(vol) || isNaN(abv) || isNaN(target)) {
     return showError('dil-result', t('err_fill_all'));
@@ -317,10 +322,10 @@ document.getElementById('dil-calc').addEventListener('click', () => {
 
 // --- 3. Blending Calculator ---
 document.getElementById('blend-calc').addEventListener('click', () => {
-  const v1 = parseFloat(document.getElementById('blend-vol1').value);
-  const a1 = parseFloat(document.getElementById('blend-abv1').value);
-  const v2 = parseFloat(document.getElementById('blend-vol2').value);
-  const a2 = parseFloat(document.getElementById('blend-abv2').value);
+  const v1 = parseNum('blend-vol1');
+  const a1 = parseNum('blend-abv1');
+  const v2 = parseNum('blend-vol2');
+  const a2 = parseNum('blend-abv2');
 
   if (isNaN(v1) || isNaN(a1) || isNaN(v2) || isNaN(a2)) {
     return showError('blend-result', t('err_fill_all'));
@@ -344,7 +349,7 @@ document.getElementById('blend-calc').addEventListener('click', () => {
 
 // --- 4. ABV / Proof Converter ---
 document.getElementById('conv-calc').addEventListener('click', () => {
-  const value = parseFloat(document.getElementById('conv-value').value);
+  const value = parseNum('conv-value');
   const from = document.querySelector('input[name="conv-from"]:checked').value;
 
   if (isNaN(value) || value < 0) {
