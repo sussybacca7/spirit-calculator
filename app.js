@@ -260,50 +260,7 @@ function showError(elementId, message) {
   showResult(elementId, `<div class="result-error">${message}</div>`);
 }
 
-// --- 1. Temperature Correction ---
-
-// Table 2 is always available via TABLE2 constant (table2.js).
-// Table 1 is loaded from JSON when available.
-const loadedTables = { '1': null };
-let selectedTable = localStorage.getItem('spirit-calc-table') || '2';
-
-function initTableSelector() {
-  document.querySelectorAll('.toggle[data-table]').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.table === selectedTable);
-    btn.addEventListener('click', () => {
-      if (btn.disabled) return;
-      document.querySelectorAll('.toggle[data-table]').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      selectedTable = btn.dataset.table;
-      localStorage.setItem('spirit-calc-table', selectedTable);
-      const result = document.getElementById('temp-result');
-      result.classList.remove('visible');
-      result.innerHTML = '';
-    });
-  });
-}
-
-async function loadTables() {
-  // Table 2 is hardcoded in table2.js — no fetch needed.
-  // Try to load Table 1 from JSON.
-  await fetch('./tables/table 1 ცხრილი 1/table1_data.json')
-    .then(r => { if (!r.ok) throw new Error(); return r.json(); })
-    .then(data => { loadedTables['1'] = data; })
-    .catch(() => { loadedTables['1'] = null; });
-
-  document.querySelectorAll('.toggle[data-table]').forEach(btn => {
-    const key = btn.dataset.table;
-    const available = key === '2' || loadedTables[key] !== null;
-    btn.disabled = !available;
-    if (!available && btn.dataset.table === selectedTable) {
-      selectedTable = '2';
-      localStorage.setItem('spirit-calc-table', selectedTable);
-      document.querySelectorAll('.toggle[data-table]').forEach(b => {
-        b.classList.toggle('active', b.dataset.table === selectedTable);
-      });
-    }
-  });
-}
+// --- 1. Temperature Correction (Table 2) ---
 
 // Fast Table 2 lookup using preloaded TABLE2 constant (from table2.js)
 const _T2_READINGS = Object.keys(TABLE2).map(parseFloat).sort((a, b) => a - b);
@@ -416,16 +373,7 @@ document.getElementById('temp-calc').addEventListener('click', () => {
     return showError('temp-result', t('err_temp_range'));
   }
 
-  let corrected;
-  if (selectedTable === '2') {
-    corrected = table2Lookup(reading, temp);
-  } else {
-    const table = loadedTables[selectedTable];
-    if (!table) {
-      return showError('temp-result', t('err_table_not_loaded').replace('{n}', selectedTable));
-    }
-    corrected = getTableValue(table.data, reading, temp);
-  }
+  const corrected = table2Lookup(reading, temp);
 
   if (corrected === null) {
     return showError('temp-result', t('err_out_of_range'));
@@ -440,8 +388,7 @@ document.getElementById('temp-calc').addEventListener('click', () => {
     <div class="result-value">${corrected.toFixed(2)}%</div>
     <div class="result-detail">
       ${t('res_correction')}: ${sign}${diff.toFixed(2)}%<br>
-      ${t('res_hydrometer_read')} ${reading}% ${t('res_at')} ${displayTemp}°${tempUnit.current}<br>
-      ${t('res_via_table')} ${selectedTable}
+      ${t('res_hydrometer_read')} ${reading}% ${t('res_at')} ${displayTemp}°${tempUnit.current}
     </div>
   `);
 });
@@ -677,8 +624,6 @@ document.getElementById('conv-calc').addEventListener('click', () => {
 });
 
 // --- Init ---
-initTableSelector();
-loadTables();
 applyLanguage();
 
 // --- Service Worker Registration ---
