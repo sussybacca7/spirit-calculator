@@ -243,6 +243,21 @@ header h1 {
   height: 16px;
 }
 
+/* Full-width toggle group (table selector) */
+.toggle-group.full-width {
+  width: 100%;
+}
+
+.toggle-group.full-width .toggle {
+  flex: 1;
+  text-align: center;
+}
+
+.toggle:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
 /* Calculate Button */
 .btn-calculate {
   width: 100%;

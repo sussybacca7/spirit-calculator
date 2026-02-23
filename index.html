@@ -24,6 +24,7 @@
 
   <nav class="tab-bar">
     <button class="tab active" data-tab="temperature" data-i18n="tab_temp">Temp Correction</button>
+    <button class="tab" data-tab="volume" data-i18n="tab_volume">Pure Alcohol</button>
     <button class="tab" data-tab="dilution" data-i18n="tab_dilution">Dilution</button>
     <button class="tab" data-tab="blending" data-i18n="tab_blending">Blending</button>
     <button class="tab" data-tab="converter" data-i18n="tab_converter">ABV / Proof</button>
@@ -36,8 +37,15 @@
         <h2 data-i18n="temp_title">Temperature Correction</h2>
         <p class="description" data-i18n="temp_desc">Correct your hydrometer reading to the true ABV based on liquid temperature.</p>
         <div class="field">
+          <label data-i18n="temp_table_label">Lookup Table</label>
+          <div class="toggle-group full-width">
+            <button class="toggle" data-table="1" data-i18n="temp_table_1">Table 1</button>
+            <button class="toggle active" data-table="2" data-i18n="temp_table_2">Table 2</button>
+          </div>
+        </div>
+        <div class="field">
           <label for="temp-reading" data-i18n="temp_reading_label">Hydrometer Reading (% ABV)</label>
-          <input type="number" id="temp-reading" inputmode="decimal" step="0.1" min="0" max="100" data-i18n-placeholder="temp_reading_ph" placeholder="e.g. 65.0">
+          <input type="number" id="temp-reading" inputmode="decimal" step="0.1" min="0" max="105" data-i18n-placeholder="temp_reading_ph" placeholder="e.g. 65.0">
         </div>
         <div class="field">
           <label for="temp-actual" data-i18n="temp_liquid_label">Liquid Temperature</label>
@@ -49,15 +57,30 @@
             </div>
           </div>
         </div>
-        <div class="field">
-          <label for="temp-reference" data-i18n="temp_ref_label">Reference Temperature</label>
-          <div class="input-row">
-            <input type="number" id="temp-reference" inputmode="decimal" step="0.1" value="20">
-            <span class="unit-label" id="temp-ref-unit">°C</span>
-          </div>
-        </div>
         <button class="btn-calculate" id="temp-calc" data-i18n="btn_calculate">Calculate</button>
         <div class="result" id="temp-result"></div>
+      </div>
+    </section>
+
+    <!-- Pure Alcohol Volume Calculator -->
+    <section id="volume" class="calculator">
+      <div class="card">
+        <h2 data-i18n="vol_title">Pure Alcohol Volume</h2>
+        <p class="description" data-i18n="vol_desc">Calculate the volume of pure ethyl alcohol in a solution using Table 4 multipliers.</p>
+        <div class="field">
+          <label for="vol-volume" data-i18n="vol_volume_label">Volume of Solution (liters)</label>
+          <input type="number" id="vol-volume" inputmode="decimal" step="0.1" min="0" data-i18n-placeholder="vol_volume_ph" placeholder="e.g. 10.0">
+        </div>
+        <div class="field">
+          <label for="vol-abv" data-i18n="vol_abv_label">Alcohol Content at 20°C (%)</label>
+          <input type="number" id="vol-abv" inputmode="decimal" step="0.1" min="0" max="100" data-i18n-placeholder="vol_abv_ph" placeholder="e.g. 40.0">
+        </div>
+        <div class="field">
+          <label for="vol-temp" data-i18n="vol_temp_label">Liquid Temperature (°C)</label>
+          <input type="number" id="vol-temp" inputmode="decimal" step="0.1" data-i18n-placeholder="vol_temp_ph" placeholder="e.g. 20">
+        </div>
+        <button class="btn-calculate" id="vol-calc" data-i18n="btn_calculate">Calculate</button>
+        <div class="result" id="vol-result"></div>
       </div>
     </section>
 

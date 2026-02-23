@@ -1,4 +1,4 @@
-const CACHE_NAME = 'spirit-calc-v2';
+const CACHE_NAME = 'spirit-calc-v3';
 const ASSETS = [
   './',
   './index.html',
@@ -6,10 +6,18 @@ const ASSETS = [
   './app.js',
   './manifest.json'
 ];
+const TABLE_ASSETS = [
+  './tables/table 1 ცხრილი 1/table1_data.json',
+  './tables/table 2 ცხრილი 2/table2_data.json',
+  './tables/table 2 ცხრილი 2/table4_data.json',
+];
 
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
+    caches.open(CACHE_NAME).then(async cache => {
+      await cache.addAll(ASSETS);
+      await Promise.all(TABLE_ASSETS.map(url => cache.add(url).catch(() => {})));
+    })
   );
   self.skipWaiting();
 });

@@ -4,6 +4,7 @@ const translations = {
     title: 'Spirit Calculator',
     subtitle: 'Alcohol Content Tools',
     tab_temp: 'Temp Correction',
+    tab_volume: 'Pure Alcohol',
     tab_dilution: 'Dilution',
     tab_blending: 'Blending',
     tab_converter: 'ABV / Proof',
@@ -12,11 +13,13 @@ const translations = {
     // Temperature
     temp_title: 'Temperature Correction',
     temp_desc: 'Correct your hydrometer reading to the true ABV based on liquid temperature.',
+    temp_table_label: 'Lookup Table',
+    temp_table_1: 'Table 1',
+    temp_table_2: 'Table 2',
     temp_reading_label: 'Hydrometer Reading (% ABV)',
     temp_reading_ph: 'e.g. 65.0',
     temp_liquid_label: 'Liquid Temperature',
     temp_liquid_ph: 'e.g. 25',
-    temp_ref_label: 'Reference Temperature',
     // Dilution
     dil_title: 'Dilution Calculator',
     dil_desc: 'Calculate how much water to add to reach your target ABV.',
@@ -51,11 +54,25 @@ const translations = {
     err_target_zero: 'Target ABV must be greater than 0.',
     err_vol_zero: 'Volume must be greater than 0.',
     err_valid_number: 'Please enter a valid positive number.',
+    err_table_not_loaded: 'Table {n} is not available.',
+    err_out_of_range: 'Value is outside the table range.',
+    // Volume calculator
+    vol_title: 'Pure Alcohol Volume',
+    vol_desc: 'Calculate the volume of pure ethyl alcohol in a solution using Table 4 multipliers.',
+    vol_volume_label: 'Volume of Solution (liters)',
+    vol_volume_ph: 'e.g. 10.0',
+    vol_abv_label: 'Alcohol Content at 20°C (%)',
+    vol_abv_ph: 'e.g. 40.0',
+    vol_temp_label: 'Liquid Temperature (°C)',
+    vol_temp_ph: 'e.g. 20',
     // Results
     res_corrected_abv: 'Corrected ABV',
     res_correction: 'Correction',
     res_hydrometer_read: 'Hydrometer read',
     res_at: 'at',
+    res_via_table: 'via Table',
+    res_multiplier: 'Multiplier',
+    res_pure_alcohol: 'Pure Alcohol Volume',
     res_water_to_add: 'Water to Add',
     res_final_volume: 'Final volume',
     res_starting: 'Starting',
@@ -67,6 +84,7 @@ const translations = {
     title: 'სპირტის კალკულატორი',
     subtitle: 'ალკოჰოლის შემცველობის ხელსაწყოები',
     tab_temp: 'ტემპ. კორექცია',
+    tab_volume: 'სუფ. სპირტი',
     tab_dilution: 'განზავება',
     tab_blending: 'შერევა',
     tab_converter: 'ალკ. / პრუფი',
@@ -75,11 +93,13 @@ const translations = {
     // Temperature
     temp_title: 'ტემპერატურის კორექცია',
     temp_desc: 'შეასწორეთ ჰიდრომეტრის ჩვენება რეალურ ალკ.%-ზე სითხის ტემპერატურის მიხედვით.',
+    temp_table_label: 'საძიებო ცხრილი',
+    temp_table_1: 'ცხრილი 1',
+    temp_table_2: 'ცხრილი 2',
     temp_reading_label: 'ჰიდრომეტრის ჩვენება (% ალკ.)',
     temp_reading_ph: 'მაგ. 65.0',
     temp_liquid_label: 'სითხის ტემპერატურა',
     temp_liquid_ph: 'მაგ. 25',
-    temp_ref_label: 'საცნობარო ტემპერატურა',
     // Dilution
     dil_title: 'განზავების კალკულატორი',
     dil_desc: 'გამოთვალეთ რამდენი წყალი დაამატოთ სასურველ ალკ.%-მდე.',
@@ -114,11 +134,25 @@ const translations = {
     err_target_zero: 'სასურველი ალკ.% უნდა იყოს 0-ზე მეტი.',
     err_vol_zero: 'მოცულობა უნდა იყოს 0-ზე მეტი.',
     err_valid_number: 'გთხოვთ შეიყვანოთ დადებითი რიცხვი.',
+    err_table_not_loaded: 'ცხრილი {n} მიუწვდომელია.',
+    err_out_of_range: 'მნიშვნელობა ცხრილის დიაპაზონს გარეთ.',
+    // Volume calculator
+    vol_title: 'სუფთა სპირტის მოცულობა',
+    vol_desc: 'გამოთვალეთ სუფთა ეთილის სპირტის მოცულობა ხსნარში ცხრილი 4-ის გამამრავლებლების გამოყენებით.',
+    vol_volume_label: 'ხსნარის მოცულობა (ლიტრი)',
+    vol_volume_ph: 'მაგ. 10.0',
+    vol_abv_label: 'ალკოჰოლის შემცველობა 20°C-ზე (%)',
+    vol_abv_ph: 'მაგ. 40.0',
+    vol_temp_label: 'სითხის ტემპერატურა (°C)',
+    vol_temp_ph: 'მაგ. 20',
     // Results
     res_corrected_abv: 'შესწორებული ალკ.',
     res_correction: 'კორექცია',
     res_hydrometer_read: 'ჰიდრომეტრმა აჩვენა',
     res_at: '',
+    res_via_table: 'ცხრილი',
+    res_multiplier: 'გამამრავლებელი',
+    res_pure_alcohol: 'სუფთა სპირტის მოცულობა',
     res_water_to_add: 'დასამატებელი წყალი',
     res_final_volume: 'საბოლოო მოცულობა',
     res_starting: 'საწყისი',
@@ -187,9 +221,6 @@ toggleBtns.forEach(btn => {
     toggleBtns.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     tempUnit.current = btn.dataset.unit;
-    document.getElementById('temp-ref-unit').textContent = tempUnit.current === 'C' ? '°C' : '°F';
-    const refInput = document.getElementById('temp-reference');
-    refInput.value = tempUnit.current === 'C' ? '20' : '68';
   });
 });
 
@@ -205,46 +236,196 @@ function showError(elementId, message) {
 }
 
 // --- 1. Temperature Correction ---
-function temperatureCorrection(readingABV, tempC, refTempC) {
-  const delta = tempC - refTempC;
-  const factor = 0.40 - (readingABV - 40) * 0.001;
-  const corrected = readingABV + (delta * Math.max(factor, 0.25));
-  return Math.round(corrected * 10) / 10;
+
+// Table state
+const loadedTables = { '1': null, '2': null, '4': null };
+let selectedTable = localStorage.getItem('spirit-calc-table') || '2';
+
+const TABLE_PATHS = {
+  '1': './tables/table 1 ცხრილი 1/table1_data.json',
+  '2': './tables/table 2 ცხრილი 2/table2_data.json',
+};
+
+function initTableSelector() {
+  document.querySelectorAll('.toggle[data-table]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.table === selectedTable);
+    btn.addEventListener('click', () => {
+      if (btn.disabled) return;
+      document.querySelectorAll('.toggle[data-table]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedTable = btn.dataset.table;
+      localStorage.setItem('spirit-calc-table', selectedTable);
+      const result = document.getElementById('temp-result');
+      result.classList.remove('visible');
+      result.innerHTML = '';
+    });
+  });
+}
+
+async function loadTables() {
+  await Promise.all(
+    Object.entries(TABLE_PATHS).map(([key, path]) =>
+      fetch(path)
+        .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+        .then(data => { loadedTables[key] = data; })
+        .catch(() => { loadedTables[key] = null; })
+    )
+  );
+  document.querySelectorAll('.toggle[data-table]').forEach(btn => {
+    const available = loadedTables[btn.dataset.table] !== null;
+    btn.disabled = !available;
+    if (!available && btn.dataset.table === selectedTable) {
+      const fallback = ['1', '2', '4'].find(k => loadedTables[k] !== null);
+      if (fallback) {
+        selectedTable = fallback;
+        localStorage.setItem('spirit-calc-table', selectedTable);
+        document.querySelectorAll('.toggle[data-table]').forEach(b => {
+          b.classList.toggle('active', b.dataset.table === selectedTable);
+        });
+      }
+    }
+  });
+}
+
+// Bilinear interpolation from table data
+function linearInterp(x, x1, x2, y1, y2) {
+  if (x1 === x2) return y1;
+  return y1 + (y2 - y1) * (x - x1) / (x2 - x1);
+}
+
+function getTableValue(data, spirReading, tempC) {
+  // Build map: numeric reading → original string key
+  const rKeyMap = {};
+  Object.keys(data).forEach(k => { rKeyMap[Number(k)] = k; });
+  const rNums = Object.keys(rKeyMap).map(Number).sort((a, b) => b - a);
+
+  if (rNums.length === 0) return null;
+
+  const rMin = rNums[rNums.length - 1];
+  const rMax = rNums[0];
+  const r = Math.max(rMin, Math.min(rMax, spirReading));
+
+  // Find bracketing reading keys
+  let rLo = rMin, rHi = rMax;
+  for (let i = 0; i < rNums.length - 1; i++) {
+    if (rNums[i] >= r && rNums[i + 1] <= r) {
+      rHi = rNums[i];
+      rLo = rNums[i + 1];
+      break;
+    }
+  }
+
+  function getValueAtReading(rNum) {
+    const row = data[rKeyMap[rNum]];
+    if (!row) return null;
+    const tEntries = Object.entries(row)
+      .map(([k, v]) => ({ t: parseFloat(k), v }))
+      .filter(e => e.v !== null && !isNaN(e.v))
+      .sort((a, b) => b.t - a.t);
+    if (tEntries.length === 0) return null;
+    const tClamped = Math.max(tEntries[tEntries.length - 1].t, Math.min(tEntries[0].t, tempC));
+    if (tClamped >= tEntries[0].t) return tEntries[0].v;
+    if (tClamped <= tEntries[tEntries.length - 1].t) return tEntries[tEntries.length - 1].v;
+    for (let i = 0; i < tEntries.length - 1; i++) {
+      if (tEntries[i].t >= tClamped && tEntries[i + 1].t <= tClamped) {
+        return linearInterp(tClamped, tEntries[i + 1].t, tEntries[i].t, tEntries[i + 1].v, tEntries[i].v);
+      }
+    }
+    return null;
+  }
+
+  if (rLo === rHi) return getValueAtReading(rLo);
+  const vLo = getValueAtReading(rLo);
+  const vHi = getValueAtReading(rHi);
+  if (vLo === null && vHi === null) return null;
+  if (vLo === null) return vHi;
+  if (vHi === null) return vLo;
+  return linearInterp(r, rLo, rHi, vLo, vHi);
 }
 
 document.getElementById('temp-calc').addEventListener('click', () => {
   const reading = parseFloat(document.getElementById('temp-reading').value);
   let temp = parseFloat(document.getElementById('temp-actual').value);
-  let refTemp = parseFloat(document.getElementById('temp-reference').value);
 
-  if (isNaN(reading) || isNaN(temp) || isNaN(refTemp)) {
+  if (isNaN(reading) || isNaN(temp)) {
     return showError('temp-result', t('err_fill_all'));
   }
-  if (reading < 0 || reading > 100) {
+  if (reading < 0 || reading > 105) {
     return showError('temp-result', t('err_abv_range'));
+  }
+
+  const table = loadedTables[selectedTable];
+  if (!table) {
+    return showError('temp-result', t('err_table_not_loaded').replace('{n}', selectedTable));
   }
 
   if (tempUnit.current === 'F') {
     temp = (temp - 32) * 5 / 9;
-    refTemp = (refTemp - 32) * 5 / 9;
   }
 
-  const corrected = temperatureCorrection(reading, temp, refTemp);
-  const diff = Math.round((corrected - reading) * 10) / 10;
+  const corrected = getTableValue(table.data, reading, temp);
+  if (corrected === null) {
+    return showError('temp-result', t('err_out_of_range'));
+  }
+
+  const correctedRounded = Math.round(corrected * 10) / 10;
+  const diff = Math.round((correctedRounded - reading) * 10) / 10;
   const sign = diff >= 0 ? '+' : '';
   const displayTemp = parseFloat(document.getElementById('temp-actual').value);
 
   showResult('temp-result', `
     <div class="result-label">${t('res_corrected_abv')}</div>
-    <div class="result-value">${corrected}%</div>
+    <div class="result-value">${correctedRounded}%</div>
     <div class="result-detail">
       ${t('res_correction')}: ${sign}${diff}%<br>
-      ${t('res_hydrometer_read')} ${reading}% ${t('res_at')} ${displayTemp}°${tempUnit.current}
+      ${t('res_hydrometer_read')} ${reading}% ${t('res_at')} ${displayTemp}°${tempUnit.current}<br>
+      ${t('res_via_table')} ${selectedTable}
     </div>
   `);
 });
 
-// --- 2. Dilution Calculator ---
+// --- 2. Pure Alcohol Volume Calculator (Table 4) ---
+let table4Data = null;
+
+fetch('./tables/table 2 ცხრილი 2/table4_data.json')
+  .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+  .then(data => { table4Data = data; })
+  .catch(() => { table4Data = null; });
+
+document.getElementById('vol-calc').addEventListener('click', () => {
+  const vol = parseFloat(document.getElementById('vol-volume').value);
+  const abv = parseFloat(document.getElementById('vol-abv').value);
+  const temp = parseFloat(document.getElementById('vol-temp').value);
+
+  if (isNaN(vol) || isNaN(abv) || isNaN(temp)) {
+    return showError('vol-result', t('err_fill_all'));
+  }
+  if (vol <= 0) {
+    return showError('vol-result', t('err_vol_zero'));
+  }
+  if (!table4Data) {
+    return showError('vol-result', t('err_table_not_loaded').replace('{n}', '4'));
+  }
+
+  const multiplier = getTableValue(table4Data.data, abv, temp);
+  if (multiplier === null) {
+    return showError('vol-result', t('err_out_of_range'));
+  }
+
+  const multiplierRounded = Math.round(multiplier * 10000) / 10000;
+  const pureAlcohol = Math.round(vol * multiplier * 1000) / 1000;
+
+  showResult('vol-result', `
+    <div class="result-label">${t('res_pure_alcohol')}</div>
+    <div class="result-value">${pureAlcohol} L</div>
+    <div class="result-detail">
+      ${t('res_multiplier')}: ${multiplierRounded}<br>
+      ${vol} L × ${multiplierRounded} (${t('res_via_table')} 4)
+    </div>
+  `);
+});
+
+// --- 4. Dilution Calculator ---
 document.getElementById('dil-calc').addEventListener('click', () => {
   const vol = parseFloat(document.getElementById('dil-volume').value);
   const abv = parseFloat(document.getElementById('dil-abv').value);
@@ -276,7 +457,7 @@ document.getElementById('dil-calc').addEventListener('click', () => {
   `);
 });
 
-// --- 3. Blending Calculator ---
+// --- 5. Blending Calculator ---
 document.getElementById('blend-calc').addEventListener('click', () => {
   const v1 = parseFloat(document.getElementById('blend-vol1').value);
   const a1 = parseFloat(document.getElementById('blend-abv1').value);
@@ -303,7 +484,7 @@ document.getElementById('blend-calc').addEventListener('click', () => {
   `);
 });
 
-// --- 4. ABV / Proof Converter ---
+// --- 6. ABV / Proof Converter ---
 document.getElementById('conv-calc').addEventListener('click', () => {
   const value = parseFloat(document.getElementById('conv-value').value);
   const from = document.querySelector('input[name="conv-from"]:checked').value;
@@ -343,6 +524,8 @@ document.getElementById('conv-calc').addEventListener('click', () => {
 });
 
 // --- Init ---
+initTableSelector();
+loadTables();
 applyLanguage();
 
 // --- Service Worker Registration ---
