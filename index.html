@@ -37,12 +37,12 @@
         <p class="description" data-i18n="temp_desc">Correct your hydrometer reading to the true ABV based on liquid temperature.</p>
         <div class="field">
           <label for="temp-reading" data-i18n="temp_reading_label">Hydrometer Reading (% ABV)</label>
-          <input type="text" id="temp-reading" inputmode="decimal" data-i18n-placeholder="temp_reading_ph" placeholder="e.g. 65.0">
+          <input type="text" id="temp-reading" inputmode="text" data-i18n-placeholder="temp_reading_ph" placeholder="e.g. 65.0">
         </div>
         <div class="field">
           <label for="temp-actual" data-i18n="temp_liquid_label">Liquid Temperature</label>
           <div class="input-row">
-            <input type="text" id="temp-actual" inputmode="decimal" data-i18n-placeholder="temp_liquid_ph" placeholder="e.g. 25">
+            <input type="text" id="temp-actual" inputmode="text" data-i18n-placeholder="temp_liquid_ph" placeholder="e.g. 25">
             <div class="toggle-group">
               <button class="toggle active" data-unit="C">°C</button>
               <button class="toggle" data-unit="F">°F</button>
@@ -61,15 +61,15 @@
         <p class="description" data-i18n="dil_desc">Calculate how much water to add to reach your target ABV.</p>
         <div class="field">
           <label for="dil-volume" data-i18n="dil_volume_label">Current Volume (liters)</label>
-          <input type="text" id="dil-volume" inputmode="decimal" data-i18n-placeholder="dil_volume_ph" placeholder="e.g. 5.0">
+          <input type="text" id="dil-volume" inputmode="text" data-i18n-placeholder="dil_volume_ph" placeholder="e.g. 5.0">
         </div>
         <div class="field">
           <label for="dil-abv" data-i18n="dil_abv_label">Current ABV (%)</label>
-          <input type="text" id="dil-abv" inputmode="decimal" data-i18n-placeholder="dil_abv_ph" placeholder="e.g. 70.0">
+          <input type="text" id="dil-abv" inputmode="text" data-i18n-placeholder="dil_abv_ph" placeholder="e.g. 70.0">
         </div>
         <div class="field">
           <label for="dil-target" data-i18n="dil_target_label">Target ABV (%)</label>
-          <input type="text" id="dil-target" inputmode="decimal" data-i18n-placeholder="dil_target_ph" placeholder="e.g. 40.0">
+          <input type="text" id="dil-target" inputmode="text" data-i18n-placeholder="dil_target_ph" placeholder="e.g. 40.0">
         </div>
         <button class="btn-calculate" id="dil-calc" data-i18n="btn_calculate">Calculate</button>
         <div class="result" id="dil-result"></div>
@@ -84,20 +84,20 @@
         <h3 class="spirit-label" data-i18n="blend_spirit_a">Spirit A</h3>
         <div class="field">
           <label for="blend-vol1" data-i18n="blend_vol_label">Volume (liters)</label>
-          <input type="text" id="blend-vol1" inputmode="decimal" data-i18n-placeholder="blend_vol_ph" placeholder="e.g. 3.0">
+          <input type="text" id="blend-vol1" inputmode="text" data-i18n-placeholder="blend_vol_ph" placeholder="e.g. 3.0">
         </div>
         <div class="field">
           <label for="blend-abv1" data-i18n="blend_abv_label">ABV (%)</label>
-          <input type="text" id="blend-abv1" inputmode="decimal" data-i18n-placeholder="blend_abv_ph" placeholder="e.g. 60.0">
+          <input type="text" id="blend-abv1" inputmode="text" data-i18n-placeholder="blend_abv_ph" placeholder="e.g. 60.0">
         </div>
         <h3 class="spirit-label" data-i18n="blend_spirit_b">Spirit B</h3>
         <div class="field">
           <label for="blend-vol2" data-i18n="blend_vol_label">Volume (liters)</label>
-          <input type="text" id="blend-vol2" inputmode="decimal" data-i18n-placeholder="blend_vol_ph" placeholder="e.g. 2.0">
+          <input type="text" id="blend-vol2" inputmode="text" data-i18n-placeholder="blend_vol_ph" placeholder="e.g. 2.0">
         </div>
         <div class="field">
           <label for="blend-abv2" data-i18n="blend_abv_label">ABV (%)</label>
-          <input type="text" id="blend-abv2" inputmode="decimal" data-i18n-placeholder="blend_abv_ph" placeholder="e.g. 45.0">
+          <input type="text" id="blend-abv2" inputmode="text" data-i18n-placeholder="blend_abv_ph" placeholder="e.g. 45.0">
         </div>
         <button class="btn-calculate" id="blend-calc" data-i18n="btn_calculate">Calculate</button>
         <div class="result" id="blend-result"></div>
@@ -111,7 +111,7 @@
         <p class="description" data-i18n="conv_desc">Convert between ABV%, US Proof, and Gay-Lussac (GL).</p>
         <div class="field">
           <label for="conv-value" data-i18n="conv_value_label">Value</label>
-          <input type="text" id="conv-value" inputmode="decimal" data-i18n-placeholder="conv_value_ph" placeholder="e.g. 40">
+          <input type="text" id="conv-value" inputmode="text" data-i18n-placeholder="conv_value_ph" placeholder="e.g. 40">
         </div>
         <div class="field">
           <label data-i18n="conv_from_label">Convert from</label>
