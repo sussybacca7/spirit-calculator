@@ -275,9 +275,9 @@ document.getElementById('temp-calc').addEventListener('click', () => {
 
   showResult('temp-result', `
     <div class="result-label">${t('res_corrected_abv')}</div>
-    <div class="result-value">${corrected}%</div>
+    <div class="result-value">${corrected.toFixed(2)}%</div>
     <div class="result-detail">
-      ${t('res_correction')}: ${sign}${diff}%<br>
+      ${t('res_correction')}: ${sign}${diff.toFixed(2)}%<br>
       ${t('res_hydrometer_read')} ${reading}% ${t('res_at')} ${displayTemp}°${tempUnit.current}
     </div>
   `);
