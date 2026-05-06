@@ -513,11 +513,11 @@ document.getElementById('vol-calc').addEventListener('click', () => {
   }
 
   const multiplierRounded = Math.round(multiplier * 10000) / 10000;
-  const pureAlcohol = Math.round(vol * multiplier * 1000) / 1000;
+  const pureAlcohol = Math.round(vol * multiplier * 10000) / 10000;
 
   showResult('vol-result', `
     <div class="result-label">${t('res_pure_alcohol')}</div>
-    <div class="result-value">${pureAlcohol} L</div>
+    <div class="result-value">${pureAlcohol.toFixed(4)} L</div>
     <div class="result-detail">
       ${t('res_multiplier')}: ${multiplierRounded}<br>
       ${vol} L × ${multiplierRounded} (${t('res_via_table')} 4)
