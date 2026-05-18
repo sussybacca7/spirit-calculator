@@ -91,16 +91,11 @@ const translations = {
     res_conversion: 'Conversion Results',
     // FB: Commercial Mass
     tab_fb: 'FB',
-    fb_title: 'Commercial Mass',
-    fb_desc: 'Calculate the commercial mass (kg) of a spirit at 20°C using Table IV a.',
-    fb_volume_label: 'Volume of Solution (liters)',
-    fb_volume_ph: 'e.g. 100.0',
+    fb_title: 'FB',
+    fb_desc: 'Look up the commercial density (ρ com) at 20°C for 1 litre using Table IV a.',
     fb_abv_label: 'Alcohol Content at 20°C (%)',
     fb_abv_ph: 'e.g. 40.0',
-    res_fb_mass: 'Commercial Mass',
-    res_fb_density_abs: 'ρ abs (Table IV a)',
-    res_fb_density_com: 'ρ com',
-    res_fb_correction: 'Correction applied',
+    res_fb_rho_com: 'ρ com (kg/litre)',
   },
   ka: {
     title: 'სპირტის კალკულატორი',
@@ -193,16 +188,11 @@ const translations = {
     res_conversion: 'კონვერტაციის შედეგი',
     // FB: Commercial Mass
     tab_fb: 'ფ.წ.',
-    fb_title: 'ფიზიკური წონა',
-    fb_desc: 'გამოთვალეთ სპირტის კომერციული წონა (კგ) 20°C-ზე, ცხრილი IV a-ის გამოყენებით.',
-    fb_volume_label: 'ხსნარის მოცულობა (ლიტრი)',
-    fb_volume_ph: 'მაგ. 100.0',
+    fb_title: 'ფ.წ.',
+    fb_desc: 'მოძებნეთ კომერციული სიმკვრივე (ρ კომ) 20°C-ზე 1 ლიტრისთვის, ცხრილი IV a-ის გამოყენებით.',
     fb_abv_label: 'ალკოჰოლის შემცველობა 20°C-ზე (%)',
     fb_abv_ph: 'მაგ. 40.0',
-    res_fb_mass: 'კომერციული წონა',
-    res_fb_density_abs: 'ρ აბს (ცხრილი IV a)',
-    res_fb_density_com: 'ρ კომ',
-    res_fb_correction: 'გამოყენებული კორექცია',
+    res_fb_rho_com: 'ρ კომ (კგ/ლ)',
   }
 };
 
@@ -647,63 +637,56 @@ document.getElementById('conv-calc').addEventListener('click', () => {
   `);
 });
 
-// --- FB: Commercial Mass Calculator (Table IV a) ---
-let tableIVaData = null;
+// --- FB: Commercial Density Lookup (Table IV a / pages 680-681) ---
+let fbJsonData = null;
 
 fetch('./tables/table_fb/table_iva.json')
   .then(r => { if (!r.ok) throw new Error(); return r.json(); })
-  .then(json => { tableIVaData = json.data; })
-  .catch(() => { tableIVaData = null; });
+  .then(json => { fbJsonData = json; })
+  .catch(() => { fbJsonData = null; });
 
-function tableIVaLookup(abv) {
-  if (!tableIVaData) return null;
+function fbLookup(abv) {
+  if (!fbJsonData) return null;
   const q = Math.max(0, Math.min(100, abv));
-  const idxLo = Math.min(Math.floor(q * 10), 999);
-  const idxHi = idxLo + 1;
-  const frac = q * 10 - idxLo;
-  const vLo = tableIVaData[idxLo];
-  const vHi = tableIVaData[idxHi] !== undefined ? tableIVaData[idxHi] : vLo;
-  return vLo + (vHi - vLo) * frac;
-}
-
-function fbCorrection(abv) {
-  if (abv <= 25.7) return 1.04;
-  if (abv <= 61.1) return 1.05;
-  if (abv <= 84.6) return 1.06;
-  return 1.07;
+  if (q >= 80) {
+    // Exact ρ com from book pages 680-681 (index 0 = q=80.0, index 200 = q=100.0)
+    const raw = (q - 80) * 10;
+    const idxLo = Math.min(Math.floor(raw), 199);
+    const idxHi = idxLo + 1;
+    const frac = raw - idxLo;
+    const vLo = fbJsonData.rho_com[idxLo];
+    const vHi = fbJsonData.rho_com[idxHi] !== undefined ? fbJsonData.rho_com[idxHi] : vLo;
+    return vLo + (vHi - vLo) * frac;
+  } else {
+    // Approximate from Table IV a: (ρ_abs − 1.07) / 1000
+    const data = fbJsonData.data;
+    const idxLo = Math.min(Math.floor(q * 10), 999);
+    const idxHi = Math.min(idxLo + 1, 999);
+    const frac = q * 10 - idxLo;
+    const vLo = data[idxLo];
+    const vHi = data[idxHi];
+    return (vLo + (vHi - vLo) * frac - 1.07) / 1000;
+  }
 }
 
 document.getElementById('fb-calc').addEventListener('click', () => {
-  const vol = parseNum('fb-volume');
   const abv = parseNum('fb-abv');
 
-  if (isNaN(vol) || isNaN(abv)) {
+  if (isNaN(abv)) {
     return showError('fb-result', t('err_fill_all'));
-  }
-  if (vol <= 0) {
-    return showError('fb-result', t('err_vol_zero'));
   }
   if (abv < 0 || abv > 100) {
     return showError('fb-result', t('err_abv_range'));
   }
-  if (!tableIVaData) {
+  if (!fbJsonData) {
     return showError('fb-result', t('err_table_not_loaded').replace('{n}', 'IV a'));
   }
 
-  const rhoAbs = tableIVaLookup(abv);
-  const correction = fbCorrection(abv);
-  const rhoCom = rhoAbs - correction;
-  const mass = Math.round(vol * rhoCom) / 1000;
+  const rhoCom = fbLookup(abv);
 
   showResult('fb-result', `
-    <div class="result-label">${t('res_fb_mass')}</div>
-    <div class="result-value">${mass.toFixed(3)} kg</div>
-    <div class="result-detail">
-      ${t('res_fb_density_abs')}: ${rhoAbs.toFixed(2)} kg/m³<br>
-      ${t('res_fb_density_com')}: ${rhoCom.toFixed(2)} kg/m³<br>
-      ${t('res_fb_correction')}: −${correction.toFixed(2)} kg/m³<br>
-      ${vol} L × ${(rhoCom / 1000).toFixed(5)} kg/L
-    </div>
+    <div class="result-label">${t('res_fb_rho_com')}</div>
+    <div class="result-value">${rhoCom.toFixed(4)}</div>
   `);
 });
 
