@@ -92,10 +92,15 @@ const translations = {
     // FB: Commercial Mass
     tab_fb: 'FB',
     fb_title: 'FB',
-    fb_desc: 'Look up the commercial density (ρ com) at 20°C for 1 litre using Table IV a.',
     fb_abv_label: 'Alcohol Content at 20°C (%)',
     fb_abv_ph: 'e.g. 40.0',
+    fb_pcom_heading: 'ρ com',
+    fb_pcom_desc: 'Pages 680-681. Valid for ABV 80–100%.',
+    fb_t4_heading: 'Table IV',
+    fb_t4_desc: 'Pages 684-687.',
+    fb_pcom_range_err: 'ABV must be between 80 and 100 for ρ com lookup.',
     res_fb_rho_com: 'ρ com (kg/litre)',
+    res_fb_table_iv: 'ρ abs (kg/m³)',
   },
   ka: {
     title: 'სპირტის კალკულატორი',
@@ -189,10 +194,15 @@ const translations = {
     // FB: Commercial Mass
     tab_fb: 'ფ.წ.',
     fb_title: 'ფ.წ.',
-    fb_desc: 'მოძებნეთ კომერციული სიმკვრივე (ρ კომ) 20°C-ზე 1 ლიტრისთვის, ცხრილი IV a-ის გამოყენებით.',
     fb_abv_label: 'ალკოჰოლის შემცველობა 20°C-ზე (%)',
     fb_abv_ph: 'მაგ. 40.0',
+    fb_pcom_heading: 'ρ კომ',
+    fb_pcom_desc: 'გვ. 680-681. ძალაში 80–100% ალკ.%-სთვის.',
+    fb_t4_heading: 'ცხრილი IV',
+    fb_t4_desc: 'გვ. 684-687.',
+    fb_pcom_range_err: 'ρ კომ-ისთვის ალკ.% უნდა იყოს 80-დან 100-მდე.',
     res_fb_rho_com: 'ρ კომ (კგ/ლ)',
+    res_fb_table_iv: 'ρ abs (კგ/მ³)',
   }
 };
 
@@ -637,7 +647,7 @@ document.getElementById('conv-calc').addEventListener('click', () => {
   `);
 });
 
-// --- FB: Commercial Density Lookup (Table IV a / pages 680-681) ---
+// --- FB: Commercial Density (pages 680-681) and Table IV (pages 684-687) ---
 let fbJsonData = null;
 
 fetch('./tables/table_fb/table_iva.json')
@@ -645,48 +655,64 @@ fetch('./tables/table_fb/table_iva.json')
   .then(json => { fbJsonData = json; })
   .catch(() => { fbJsonData = null; });
 
-function fbLookup(abv) {
-  if (!fbJsonData) return null;
-  const q = Math.max(0, Math.min(100, abv));
-  if (q >= 80) {
-    // Exact ρ com from book pages 680-681 (index 0 = q=80.0, index 200 = q=100.0)
-    const raw = (q - 80) * 10;
-    const idxLo = Math.min(Math.floor(raw), 199);
-    const idxHi = idxLo + 1;
-    const frac = raw - idxLo;
-    const vLo = fbJsonData.rho_com[idxLo];
-    const vHi = fbJsonData.rho_com[idxHi] !== undefined ? fbJsonData.rho_com[idxHi] : vLo;
-    return vLo + (vHi - vLo) * frac;
-  } else {
-    // Approximate from Table IV a: (ρ_abs − 1.07) / 1000
-    const data = fbJsonData.data;
-    const idxLo = Math.min(Math.floor(q * 10), 999);
-    const idxHi = Math.min(idxLo + 1, 999);
-    const frac = q * 10 - idxLo;
-    const vLo = data[idxLo];
-    const vHi = data[idxHi];
-    return (vLo + (vHi - vLo) * frac - 1.07) / 1000;
-  }
+function fbRhoCom(abv) {
+  // Exact ρ com (kg/litre) from pages 680-681. Only valid for q=80–100.
+  const raw = (abv - 80) * 10;
+  const idxLo = Math.min(Math.floor(raw), 199);
+  const idxHi = idxLo + 1;
+  const frac = raw - idxLo;
+  const vLo = fbJsonData.rho_com[idxLo];
+  const vHi = fbJsonData.rho_com[idxHi] !== undefined ? fbJsonData.rho_com[idxHi] : vLo;
+  return vLo + (vHi - vLo) * frac;
 }
 
-document.getElementById('fb-calc').addEventListener('click', () => {
-  const abv = parseNum('fb-abv');
+function fbTableIV(abv) {
+  // ρ abs (kg/m³) from Table IV a, pages 684-687. Full range q=0–100.
+  const q = Math.max(0, Math.min(100, abv));
+  const data = fbJsonData.data;
+  const idxLo = Math.min(Math.floor(q * 10), 999);
+  const idxHi = Math.min(idxLo + 1, 999);
+  const frac = q * 10 - idxLo;
+  return data[idxLo] + (data[idxHi] - data[idxLo]) * frac;
+}
+
+document.getElementById('fb-pcom-calc').addEventListener('click', () => {
+  const abv = parseNum('fb-pcom-abv');
 
   if (isNaN(abv)) {
-    return showError('fb-result', t('err_fill_all'));
+    return showError('fb-pcom-result', t('err_fill_all'));
   }
-  if (abv < 0 || abv > 100) {
-    return showError('fb-result', t('err_abv_range'));
+  if (abv < 80 || abv > 100) {
+    return showError('fb-pcom-result', t('fb_pcom_range_err'));
   }
   if (!fbJsonData) {
-    return showError('fb-result', t('err_table_not_loaded').replace('{n}', 'IV a'));
+    return showError('fb-pcom-result', t('err_table_not_loaded').replace('{n}', 'IV a'));
   }
 
-  const rhoCom = fbLookup(abv);
-
-  showResult('fb-result', `
+  const rho = fbRhoCom(abv);
+  showResult('fb-pcom-result', `
     <div class="result-label">${t('res_fb_rho_com')}</div>
-    <div class="result-value">${rhoCom.toFixed(4)}</div>
+    <div class="result-value">${rho.toFixed(4)}</div>
+  `);
+});
+
+document.getElementById('fb-t4-calc').addEventListener('click', () => {
+  const abv = parseNum('fb-t4-abv');
+
+  if (isNaN(abv)) {
+    return showError('fb-t4-result', t('err_fill_all'));
+  }
+  if (abv < 0 || abv > 100) {
+    return showError('fb-t4-result', t('err_abv_range'));
+  }
+  if (!fbJsonData) {
+    return showError('fb-t4-result', t('err_table_not_loaded').replace('{n}', 'IV a'));
+  }
+
+  const rho = fbTableIV(abv);
+  showResult('fb-t4-result', `
+    <div class="result-label">${t('res_fb_table_iv')}</div>
+    <div class="result-value">${rho.toFixed(2)}</div>
   `);
 });
 

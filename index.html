@@ -170,17 +170,28 @@
     </section>
   </main>
 
-    <!-- FB / Commercial Mass Calculator -->
+    <!-- FB / Commercial Density & Table IV Lookup -->
     <section id="fb" class="calculator">
       <div class="card">
         <h2 data-i18n="fb_title">FB</h2>
-        <p class="description" data-i18n="fb_desc">Calculate the commercial mass (kg) of a spirit at 20°C using Table IV a.</p>
+
+        <h3 class="spirit-label" data-i18n="fb_pcom_heading">ρ com</h3>
+        <p class="description" data-i18n="fb_pcom_desc">Pages 680-681. Valid for ABV 80–100%.</p>
         <div class="field">
-          <label for="fb-abv" data-i18n="fb_abv_label">Alcohol Content at 20°C (%)</label>
-          <input type="text" id="fb-abv" inputmode="text" data-i18n-placeholder="fb_abv_ph" placeholder="e.g. 40.0">
+          <label for="fb-pcom-abv" data-i18n="fb_abv_label">Alcohol Content at 20°C (%)</label>
+          <input type="text" id="fb-pcom-abv" inputmode="text" data-i18n-placeholder="fb_abv_ph" placeholder="e.g. 90.0">
         </div>
-        <button class="btn-calculate" id="fb-calc" data-i18n="btn_calculate">Calculate</button>
-        <div class="result" id="fb-result"></div>
+        <button class="btn-calculate" id="fb-pcom-calc" data-i18n="btn_calculate">Calculate</button>
+        <div class="result" id="fb-pcom-result"></div>
+
+        <h3 class="spirit-label" data-i18n="fb_t4_heading">Table IV</h3>
+        <p class="description" data-i18n="fb_t4_desc">Pages 684-687.</p>
+        <div class="field">
+          <label for="fb-t4-abv" data-i18n="fb_abv_label">Alcohol Content at 20°C (%)</label>
+          <input type="text" id="fb-t4-abv" inputmode="text" data-i18n-placeholder="fb_abv_ph" placeholder="e.g. 40.0">
+        </div>
+        <button class="btn-calculate" id="fb-t4-calc" data-i18n="btn_calculate">Calculate</button>
+        <div class="result" id="fb-t4-result"></div>
       </div>
     </section>
   </main>
