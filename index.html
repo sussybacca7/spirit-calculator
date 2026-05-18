@@ -29,6 +29,7 @@
     <button class="tab" data-tab="dilution" data-i18n="tab_dilution">Dilution</button>
     <button class="tab" data-tab="blending" data-i18n="tab_blending">Blending</button>
     <button class="tab" data-tab="converter" data-i18n="tab_converter">ABV / Proof</button>
+    <button class="tab" data-tab="fb" data-i18n="tab_fb">FB</button>
   </nav>
 
   <main>
@@ -165,6 +166,25 @@
         </div>
         <button class="btn-calculate" id="conv-calc" data-i18n="btn_convert">Convert</button>
         <div class="result" id="conv-result"></div>
+      </div>
+    </section>
+  </main>
+
+    <!-- FB / Commercial Mass Calculator -->
+    <section id="fb" class="calculator">
+      <div class="card">
+        <h2 data-i18n="fb_title">Commercial Mass</h2>
+        <p class="description" data-i18n="fb_desc">Calculate the commercial mass (kg) of a spirit at 20°C using Table IV a.</p>
+        <div class="field">
+          <label for="fb-volume" data-i18n="fb_volume_label">Volume of Solution (liters)</label>
+          <input type="text" id="fb-volume" inputmode="text" data-i18n-placeholder="fb_volume_ph" placeholder="e.g. 100.0">
+        </div>
+        <div class="field">
+          <label for="fb-abv" data-i18n="fb_abv_label">Alcohol Content at 20°C (%)</label>
+          <input type="text" id="fb-abv" inputmode="text" data-i18n-placeholder="fb_abv_ph" placeholder="e.g. 40.0">
+        </div>
+        <button class="btn-calculate" id="fb-calc" data-i18n="btn_calculate">Calculate</button>
+        <div class="result" id="fb-result"></div>
       </div>
     </section>
   </main>

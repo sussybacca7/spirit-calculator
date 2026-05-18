@@ -1,4 +1,4 @@
-const CACHE_NAME = 'spirit-calc-v10';
+const CACHE_NAME = 'spirit-calc-v11';
 const ASSETS = [
   './',
   './index.html',
@@ -12,6 +12,7 @@ const TABLE_ASSETS = [
   './tables/table 2 ცხრილი 2/table2_data.json',
   './tables/table 2 ცხრილი 2/table4_data.json',
   './tables/table 2 ცხრილი 2/alcohol_density_table_complete.json',
+  './tables/table_fb/table_iva.json',
 ];
 
 self.addEventListener('install', event => {
