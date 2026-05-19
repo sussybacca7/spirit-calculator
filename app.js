@@ -436,8 +436,8 @@ function buildDensityLookup(data) {
       for (let i = 0; i < percentages.length; i++) {
         const pct = percentages[i];
         if (!lookup[pct]) lookup[pct] = {};
-        // First value wins for any duplicate temperature keys
-        if (lookup[pct][temp] === undefined) lookup[pct][temp] = densities[i];
+        // First value wins for any duplicate temperature keys; skip null (solution frozen)
+        if (densities[i] !== null && lookup[pct][temp] === undefined) lookup[pct][temp] = densities[i];
       }
     }
   }
